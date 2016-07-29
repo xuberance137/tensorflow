@@ -7,6 +7,8 @@ import sklearn.datasets
 import sklearn.linear_model
 import matplotlib
 
+from time import sleep
+from tqdm import tqdm
 from sklearn.datasets import make_moons
 from sklearn.linear_model import LogisticRegressionCV
 import matplotlib.pyplot as plt
@@ -69,7 +71,7 @@ def build_model(nn_hdim, num_passes=20000, print_loss=False):
 	model  = {}
 
 	#Gradient Descent for each batch
-	for i in xrange(0, num_passes):
+	for i in tqdm(range(0, num_passes)):
 		#forward propagation
 		z1 = X.dot(W1) + b1
 		a1 = np.tanh(z1)
