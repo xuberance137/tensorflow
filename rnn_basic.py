@@ -1,6 +1,7 @@
 import nltk
 import csv
 import itertools
+import numpy as np
 
 vocabulary_size = 8000
 unknown_token = "UNKNOWN_TOKEN"
@@ -35,6 +36,20 @@ print "Vocabulary Size : ", vocabulary_size
 print "Most Frequent word : ", vocab[0][0], vocab[0][1]
 print "Least Frequent word : ", vocab[-1][0], vocab[-1][1]
 
+# Replace words not in dictionary wtih Unknown Token
+for index, sent in enumerate(tokenized_sentences):
+	tokenized_sentences[index] = [w if w in word_to_index else unknown_token for w in sent]
+
+print "Example Sentence : ", sentences[0]
+print "Example pre-processed Sentence : ", tokenized_sentences[0]
+print "Example codified Sentence : ", np.asarray([word_to_index[w] for w in tokenized_sentences[0]])
+
+# Creating training data
+X_train = np.asarray([[word_to_index[w] for w in sent[:-1]] for sent in tokenized_sentences])
+y_train = np.asarray([[word_to_index[w] for w in sent[1:]] for sent in tokenized_sentences])
 # for k, v in word_to_index.iteritems():
 # 	print k, v
+print "Training input :", X_train[10]
+print "Training output :", y_train[10]
+
 
