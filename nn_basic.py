@@ -115,7 +115,7 @@ num_in_samples = 2000
 num_examples = num_in_samples
 nn_input_dim = 2
 nn_output_dim = 2
-nn_hidden_dim = 50
+nn_hidden_dim = 15
 epsilon = 0.01 #learning rate
 reg_lambda = 0.01 #regularization strength
 
