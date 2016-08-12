@@ -126,17 +126,15 @@ if __name__ == '__main__':
 	print("Building Estimator")
 	m = build_estimator(model_dir)
 	print("Fitting Training Data")
-	m.fit(input_fn=lambda: input_fn(df_train), steps=FLAGS.train_steps)
-	print("Evaluating on Test Data")
-
-	step_vals = [1, 5, 10, 15]
-
+	step_vals = [1, 10, 200, 1000]
 	for val in step_vals:
-		results = m.evaluate(input_fn=lambda: input_fn(df_test), steps=val)
-		print("Results with Step = %d" % val)
+		print("Results with Step Count = %d" % val)
+		m.fit(input_fn=lambda: input_fn(df_train), steps=val)
+
+		print("Evaluating on Test Data")
+		results = m.evaluate(input_fn=lambda: input_fn(df_test), steps=1)
 		for key in sorted(results):
 			print("%s: %s" % (key, results[key]))
-
 
 
 
