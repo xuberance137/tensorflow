@@ -1,4 +1,10 @@
 
+# Adapted from:
+# https://www.tensorflow.org/versions/r0.10/tutorials/wide/index.html
+# https://www.tensorflow.org/versions/r0.9/tutorials/wide_and_deep/index.html
+# run as:
+# python tf_linear_model.py 
+
 import tempfile
 import urllib
 import pandas as pd
@@ -76,6 +82,10 @@ def build_estimator(model_dir):
 					tf.contrib.layers.crossed_column([native_country, occupation], hash_bucket_size=int(1e4))]
 	
 	# Defining deep columns
+	# Embeding vectors are low dimensional desnse real values vectors converted from higher dimensional sparse categorial vectors
+	# for example occupation went from a 1000 element hash bucket to a 8 dimensional vector 
+	# higher dimensional vectors allow for more degress of freedom that the model will have to learn
+	# usually number of dimensions is klog2(n). 8 is a good mix between 7 and 10
 	deep_columns = [
 		tf.contrib.layers.embedding_column(workclass, dimension=8),
 		tf.contrib.layers.embedding_column(education, dimension=8),
@@ -148,7 +158,7 @@ if __name__ == '__main__':
 			print("Evaluating on Test Data")
 			results = m.evaluate(input_fn=lambda: input_fn(df_test), steps=1)
 			for key in sorted(results):
-				print("%s: %s" % (key, results[key]))
+				print("%s: %s" % (key, results[key])) 
 
 
 
