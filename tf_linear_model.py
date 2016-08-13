@@ -45,13 +45,11 @@ def test_input_fn():
 
 def build_estimator(model_dir):
 	"""Build an estimator."""
-	# Sparse base columns.
+	# Categorical variables to base columns
+	# Creating sparse base columns, creating keys starting with zero
 	gender = tf.contrib.layers.sparse_column_with_keys(column_name="gender", keys=["female", "male"])
-	race = tf.contrib.layers.sparse_column_with_keys(column_name="race", 
-                                                   keys=["Amer-Indian-Eskimo",
-                                                         "Asian-Pac-Islander",
-                                                         "Black", "Other",
-                                                         "White"])
+	race = tf.contrib.layers.sparse_column_with_keys(column_name="race", keys=["Amer-Indian-Eskimo", "Asian-Pac-Islander", "Black", "Other", "White"])
+	# Creating sparse column without knowing set of possible values in advance
 	education = tf.contrib.layers.sparse_column_with_hash_bucket("education", hash_bucket_size=1000)
 	marital_status = tf.contrib.layers.sparse_column_with_hash_bucket("marital_status", hash_bucket_size=100)
 	relationship = tf.contrib.layers.sparse_column_with_hash_bucket("relationship", hash_bucket_size=100)
@@ -66,16 +64,18 @@ def build_estimator(model_dir):
 	capital_loss = tf.contrib.layers.real_valued_column("capital_loss")
 	hours_per_week = tf.contrib.layers.real_valued_column("hours_per_week")
 
-	# Transformations.
+	# Transformations of continuous to categorical through bucketization
 	age_buckets = tf.contrib.layers.bucketized_column(age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
 
-	# Wide columns and deep columns.
+	# Defining wide columns
+	# including interaction terms
  	wide_columns = [gender, native_country, education, occupation, workclass,
 					marital_status, relationship, age_buckets,
 					tf.contrib.layers.crossed_column([education, occupation], hash_bucket_size=int(1e4)),
 					tf.contrib.layers.crossed_column([age_buckets, race, occupation], hash_bucket_size=int(1e6)),
 					tf.contrib.layers.crossed_column([native_country, occupation], hash_bucket_size=int(1e4))]
 	
+	# Defining deep columns
 	deep_columns = [
 		tf.contrib.layers.embedding_column(workclass, dimension=8),
 		tf.contrib.layers.embedding_column(education, dimension=8),
@@ -93,10 +93,16 @@ def build_estimator(model_dir):
 		]
 
 	if FLAGS.model_type == "wide":
+		print("Creating Wide Model")
+		# wide model comprising of a standard linear classifier
 		m = tf.contrib.learn.LinearClassifier(model_dir=model_dir, feature_columns=wide_columns)
 	elif FLAGS.model_type == "deep":
+		print("Creating Deep Model")
+		# deep feed forward NN comprising of two hidden layers
 		m = tf.contrib.learn.DNNClassifier(model_dir=model_dir, feature_columns=deep_columns, hidden_units=[100, 50])
 	else:
+		print("Creating Wide+Deep Model")
+		# Combined model with wide and deep components using the DNN TF API
 		m = tf.contrib.learn.DNNLinearCombinedClassifier(
 			model_dir=model_dir, 
 			linear_feature_columns=wide_columns,
@@ -124,17 +130,25 @@ if __name__ == '__main__':
 	model_dir = tempfile.mkdtemp() if not FLAGS.model_dir else FLAGS.model_dir
 	print("Model directory = %s" % model_dir)
 	print("Building Estimator")
-	m = build_estimator(model_dir)
-	print("Fitting Training Data")
-	step_vals = [1, 10, 200, 1000]
-	for val in step_vals:
-		print("Results with Step Count = %d" % val)
-		m.fit(input_fn=lambda: input_fn(df_train), steps=val)
 
-		print("Evaluating on Test Data")
-		results = m.evaluate(input_fn=lambda: input_fn(df_test), steps=1)
-		for key in sorted(results):
-			print("%s: %s" % (key, results[key]))
+	model_str = ["wide", "deep", "wide_n_deep"] 
+
+	for item in model_str:
+	
+		FLAGS.model_type = item
+
+		m = build_estimator(model_dir)
+
+		step_vals = [1, 10, 200]
+		for val in step_vals:
+			print("Fitting Training Data")
+			print("Results with Step Count = %d" % val)
+			m.fit(input_fn=lambda: input_fn(df_train), steps=val)
+
+			print("Evaluating on Test Data")
+			results = m.evaluate(input_fn=lambda: input_fn(df_test), steps=1)
+			for key in sorted(results):
+				print("%s: %s" % (key, results[key]))
 
 
 
