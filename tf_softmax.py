@@ -52,7 +52,7 @@ def main(argv=None):
     test_data_filename = FLAGS.test
 
     # Extract it into numpy matrices.
-    train_data,train_labels = extract_data(train_data_filename)
+    train_data, train_labels = extract_data(train_data_filename)
     test_data, test_labels = extract_data(test_data_filename)
 
     # Get the shape of the training data.
