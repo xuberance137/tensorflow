@@ -1,12 +1,13 @@
 # documented at : http://bcomposes.com/2015/11/26/simple-end-to-end-tensorflow-examples/ 
 # adapted from : https://github.com/jasonbaldridge/try-tf/blob/master/softmax.py
 # data from : https://github.com/jasonbaldridge/try-tf/tree/master/simdata
-# run as : $python tf_softmax.py --train data/saturn_data_train.csv --test data/saturn_data_eval.csv --num_epochs 100 --verbose True
+# run as : $python tf_simplemodel.py --train data/saturn_data_train.csv --test data/saturn_data_eval.csv --num_epochs 100 --verbose True
 
 import tensorflow.python.platform
 
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 # Global variables.
 NUM_LABELS = 2    # The number of labels.
@@ -23,7 +24,7 @@ FLAGS = tf.app.flags.FLAGS
 
 # Extract numpy representations of the labels and features given rows consisting of:
 #   label, feat_0, feat_1, ..., feat_n
-def extract_data(filename):
+def extract_data(filename, plot_data=False):
 
     # Arrays to hold the labels and feature vectors.
     labels = []
@@ -42,6 +43,12 @@ def extract_data(filename):
     labels_np = np.array(labels).astype(dtype=np.uint8)
     # Convert the int numpy array into a one-hot matrix.
     labels_onehot = (np.arange(NUM_LABELS) == labels_np[:, None]).astype(np.float32)
+
+    if plot_data:
+        plt.scatter(fvecs_np[:, 0], fvecs_np[:,1], s=40, c=labels_np, cmap=plt.cm.Spectral)
+        #plot_decision_boundary(lambda x: predict(model, x))
+        #plot_decision_boundary(lambda x: clf.predict(x))
+        plt.show()
 
     # Return a pair of the feature matrix and the one-hot label matrix.
     return fvecs_np,labels_onehot
@@ -71,7 +78,7 @@ def main(argv=None):
 
     # Extract it into numpy matrices.
     train_data, train_labels = extract_data(train_data_filename)
-    test_data, test_labels = extract_data(test_data_filename)
+    test_data, test_labels = extract_data(test_data_filename, True)
 
     # Get the shape of the training data.
     train_size,num_features = train_data.shape
@@ -164,6 +171,17 @@ def main(argv=None):
         #     print
             
         print "Accuracy:", accuracy.eval(feed_dict={x: test_data, y_: test_labels})
+
+        test_out = []
+        for index in range(len(test_data)):
+            if test_labels[index][0] == 1.0:
+                test_out.append(0)
+            else:
+                test_out.append(1)               
+            print test_data[index, 0], test_data[index,1], test_out[index]
+        
+        plt.scatter(test_data[:, 0], test_data[:,1], s=40, c=test_out, cmap=plt.cm.Spectral)
+        plt.show()
 
 
 if __name__ == '__main__':
