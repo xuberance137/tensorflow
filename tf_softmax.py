@@ -1,4 +1,7 @@
-# adapted from https://raw.githubusercontent.com/jasonbaldridge/try-tf/master/softmax.py
+# documented at : http://bcomposes.com/2015/11/26/simple-end-to-end-tensorflow-examples/ 
+# adapted from : https://github.com/jasonbaldridge/try-tf/blob/master/softmax.py
+# data from : https://github.com/jasonbaldridge/try-tf/tree/master/simdata
+# run as : $python tf_softmax.py --train data/saturn_data_train.csv --test data/saturn_data_eval.csv --num_epochs 100 --verbose True
 
 import tensorflow.python.platform
 
@@ -33,10 +36,8 @@ def extract_data(filename):
 
     # Convert the array of float arrays into a numpy float matrix.
     fvecs_np = np.matrix(fvecs).astype(np.float32)
-
-    # Convert the array of int labels into a numpy array.
+    # Convert the array of int labels into a numpy array, uint8 works because it is a binary output.
     labels_np = np.array(labels).astype(dtype=np.uint8)
-
     # Convert the int numpy array into a one-hot matrix.
     labels_onehot = (np.arange(NUM_LABELS) == labels_np[:, None]).astype(np.float32)
 
@@ -83,6 +84,7 @@ def main(argv=None):
     train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
 
     # Evaluation.
+    # match indices of largest term from tensors
     correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
@@ -100,6 +102,7 @@ def main(argv=None):
             if verbose:
                 print step,
                 
+            #batch data processing logic
             offset = (step * BATCH_SIZE) % train_size
             batch_data = train_data[offset:(offset + BATCH_SIZE), :]
             batch_labels = train_labels[offset:(offset + BATCH_SIZE)]
