@@ -150,6 +150,7 @@ def main(argv=None):
             offset = (step * BATCH_SIZE) % train_size
             batch_data = train_data[offset:(offset + BATCH_SIZE), :]
             batch_labels = train_labels[offset:(offset + BATCH_SIZE)]
+            #feeds since x and y_ are the placeholder inputs to all operations to compute trainstep
             train_step.run(feed_dict={x: batch_data, y_: batch_labels})
             if verbose and offset >= train_size-BATCH_SIZE:
                 print
