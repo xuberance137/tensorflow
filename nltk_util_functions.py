@@ -444,9 +444,6 @@ def get_wordnet_syns(word, max_syns):
     regex = r"_"
     pat = re.compile(regex)
     synset = nltk.wordnet.wordnet.synsets(word)
-    # for ss in synset:
-    #     for swords in ss.lemma_names:
-    #         synonyms.append(pat.sub(" ", swords.lower()))
 
     for ss in synset:
         for lemma in ss.lemmas():

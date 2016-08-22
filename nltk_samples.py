@@ -8,7 +8,7 @@ import nltk_util_functions as util_functions
 #maximum number of characters in essay string
 MAXIMUM_ESSAY_LENGTH = 2000
 #maximum number of synonyms accessed
-MAXIMUM_SYNS = 10
+MAXIMUM_SYNS = 5
 
 base_path = os.path.dirname(__file__)
 sys.path.append(base_path)
@@ -96,6 +96,14 @@ pos = nltk.pos_tag(nltk.word_tokenize(cleaned_text))
 print
 print "POS : ", pos
 
+"""
+Lemmatisation is closely related to stemming. The difference is that a stemmer operates 
+on a single word without knowledge of the context, and therefore cannot discriminate between 
+words which have different meanings depending on part of speech. However, stemmers are typically 
+easier to implement and run faster, and the reduced accuracy may not matter for some applications.
+"""
+
+
 # Stem spell corrected text
 porter = nltk.PorterStemmer()
 por_toks = [porter.stem(w) for w in text_tokens]
@@ -108,29 +116,5 @@ for word in text_tokens:
     synonyms = util_functions.get_wordnet_syns(word, MAXIMUM_SYNS)
     print word, synonyms
 
-"""
-Substitute synonyms to generate extra essays from existing ones.
-This is done to increase the amount of training data.
-Should only be used with lowest scoring essays.
-e_text is the text of the original essay.
-e_score is the score of the original essay.
-dictionary is a fixed dictionary (list) of words to replace.
-max_syns defines the maximum number of additional essays to generate.  Do not set too high.
-"""
-# e_toks = nltk.word_tokenize(e_text)
-# all_syns = []
-# for word in e_toks:
-#     synonyms = util_functions.get_wordnet_syns(word)
-#     if(len(synonyms) > max_syns):
-#         synonyms = random.sample(synonyms, max_syns)
-#     all_syns.append(synonyms)
-# new_essays = []
-# for i in range(0, max_syns):
-#     syn_toks = e_toks
-#     for z in range(0, len(e_toks)):
-#         if len(all_syns[z]) > i and (dictionary == None or e_toks[z] in dictionary):
-#             syn_toks[z] = all_syns[z][i]
-#     new_essays.append(" ".join(syn_toks))
-# for z in xrange(0, len(new_essays)):
-#     self.add_essay(new_essays[z], e_score, 1)
+
 
