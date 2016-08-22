@@ -434,7 +434,7 @@ def histogram(ratings, min_rating=None, max_rating=None):
     return hist_ratings
 
 
-def get_wordnet_syns(word):
+def get_wordnet_syns(word, max_syns):
     """
     Utilize wordnet (installed with nltk) to get synonyms for words
     word is the input word
@@ -444,9 +444,16 @@ def get_wordnet_syns(word):
     regex = r"_"
     pat = re.compile(regex)
     synset = nltk.wordnet.wordnet.synsets(word)
+    # for ss in synset:
+    #     for swords in ss.lemma_names:
+    #         synonyms.append(pat.sub(" ", swords.lower()))
+
     for ss in synset:
-        for swords in ss.lemma_names:
-            synonyms.append(pat.sub(" ", swords.lower()))
+        for lemma in ss.lemmas():
+            synonyms.append(lemma.name())
+            if len(synonyms) > max_syns:
+                synonyms = synonyms[:max_syns]
+
     synonyms = f7(synonyms)
     return synonyms
 

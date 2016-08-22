@@ -5,7 +5,10 @@ import re
 import pprint
 import nltk_util_functions as util_functions
 
+#maximum number of characters in essay string
 MAXIMUM_ESSAY_LENGTH = 2000
+#maximum number of synonyms accessed
+MAXIMUM_SYNS = 10
 
 base_path = os.path.dirname(__file__)
 sys.path.append(base_path)
@@ -82,29 +85,28 @@ cleaned_text, spell_errors, markup_text = util_functions.spell_correct(text)
 
 print
 print "clean : ", cleaned_text
-print 
-print "spelling errors : ", spell_errors
-print
-print "marked up text : ", markup_text
 
 # Tokenize text
 text_tokens = nltk.word_tokenize(cleaned_text)
 print
 print "Tokenized text : ", text_tokens
 
-# # Part of speech tag text
-# self._pos.append(nltk.pos_tag(self._clean_text[len(self._clean_text) - 1].split(" ")))
-# self._generated.append(essay_generated)
-# # Stem spell corrected text
-# porter = nltk.PorterStemmer()
-# por_toks = " ".join([porter.stem(w) for w in self._tokens[len(self._tokens) - 1]])
-# self._clean_stem_text.append(por_toks)
+# Part of speech tag text
+pos = nltk.pos_tag(nltk.word_tokenize(cleaned_text))
+print
+print "POS : ", pos
 
-# print "Raw Essay Text : ", essay_text
-# print "Stem Text : ", self._clean_stem_text
-# print "Tokens : ", self._tokens
-# print "POS : ", self._pos
-# print "Markup Text : ", self._markup_text
+# Stem spell corrected text
+porter = nltk.PorterStemmer()
+por_toks = [porter.stem(w) for w in text_tokens]
+
+print "stems : ", por_toks
+
+print "synonyms : "
+print
+for word in text_tokens:
+    synonyms = util_functions.get_wordnet_syns(word, MAXIMUM_SYNS)
+    print word, synonyms
 
 """
 Substitute synonyms to generate extra essays from existing ones.
