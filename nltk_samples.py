@@ -96,13 +96,13 @@ def generative_pipeline(cleaned_text, synonyms_list, generator_count):
     print len(cleaned_text.split(" "))
 
     for index in range(len(text_tokens)):
-        print index
         if len(synonyms_list[index]) > MINIMUM_SYN_FILTER:
+            print index
             print text_tokens[index], synonyms_list[index]
             list_of_syn_words = random.sample(synonyms_list[index], NUM_SYN_SELECT)
             print list_of_syn_words
             for item in list_of_syn_words:
-                gen_text_tokens = text_tokens
+                gen_text_tokens = list(text_tokens) #important to clone rather than point to same object
                 gen_text_tokens[index] = item
                 generated_text_sample = " ".join(gen_text_tokens)
                 generated_text.append(generated_text_sample) 
@@ -114,6 +114,7 @@ def generative_pipeline(cleaned_text, synonyms_list, generator_count):
 if __name__ == '__main__':
 
     text_string = "A natural language parser is a prograadam that works out the grammatical structure of sentences, for instance, which groups of words go together as phrases and which words are the subject or object of a verb. Probabilistic parsers use knowledge of language gained from hand-parsed sentences to try to produce the most likely analysis of new sentences. These statistical parsers still make some mistakes, but commonly work rather well. Their development was one of the biggest breakthroughs in natural language processing in the 1990s."
+    # text_string = "A natural language parser is a prograadam that works out the grammatical structure of sentences"
 
     cleaned_text, text_tokens, synonyms_list = text_pipeline(text_string)
 
