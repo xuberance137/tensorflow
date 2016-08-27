@@ -1,3 +1,8 @@
+"""
+http://textminingonline.com/dive-into-nltk-part-iv-stemming-and-lemmatization
+
+"""
+
 import nltk
 import os
 import sys
