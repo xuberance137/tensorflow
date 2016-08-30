@@ -1,3 +1,4 @@
+#!/Users/gopal/projects/learning/tensorflow/venv/bin/python
 """
 http://sebastianraschka.com/Articles/2014_pca_step_by_step.html
 """
