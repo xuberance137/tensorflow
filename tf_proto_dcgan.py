@@ -1,3 +1,18 @@
+#!/Users/gopal/projects/learning/tensorflow/venv/bin/python
+"""
+Adapted from http://blog.evjang.com/2016/06/generative-adversarial-nets-in.html
+Basic Equations:
+
+x -> D1 -> D1(x)
+z -> G -> x'
+z -> G -> x' -> D2 -> D2(G(z))
+
+For ideal discrimination, we want to maximize output of D1 and minimize output of D2
+Generator is designed to maximize output of D2, ie likelihood of input belonging to p_data
+D1 and D2 are copies of D ie they are networks sharing the same parameters
+value function = log D1(x) + log (1-D2(G(z)))
+"""
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
