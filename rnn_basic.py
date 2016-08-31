@@ -11,10 +11,12 @@ import nltk
 import csv
 import itertools
 import numpy as np
+import operator
+import timeit
 
 #status flags
 PRINT_INTERMEDIATE_STATE = True
-GRADIENT_CHECK = False
+GRADIENT_CHECK = True
 #algorithm parameters
 VOCAB_SIZE = 8000
 unknown_token = "UNKNOWN_TOKEN"
@@ -81,9 +83,16 @@ class RNNNumpy:
 
 	def calculate_loss(self, x, y):
 		# normalize loss by number of training samples
+		#in the perfect prediction case, it'll be sum over all correct predictions with probability/softmax output as 1 which leads to loss 0
 		N = np.sum(len(y_i) for y_i in y)
 		return self.calculate_total_loss(x,y)/N
 
+	"""
+	The idea behind SGD is pretty simple. We iterate over all our training examples and during each 
+	iteration we nudge the parameters into a direction that reduces the error. These directions are given 
+	by the gradients on the loss: \frac{\partial L}{\partial U}, \frac{\partial L}{\partial V}, \frac{\partial L}{\partial W}. 
+	SGD also needs a learning rate, which defines how big of a step we want to make in each iteration. 
+	"""
 	def bptt(self, x, y):
 		T = len(y)
 		# Perform forward propagation
@@ -229,11 +238,13 @@ if __name__ == '__main__':
 
 	#gradient check on simplified model
 	if GRADIENT_CHECK:
+		print "Gradient Checking..."
 		grad_check_vocab_size = 100
 		np.random.seed(10)
 		model_test = RNNNumpy(grad_check_vocab_size, 10, bptt_truncate=1000)
 		model_test.gradient_check([0,1,2,3], [1,2,3,4])
-		model.sgd_step(X_train[10], y_train[10], 0.005)
+		model_test = RNNNumpy(VOCAB_SIZE)		
+		model_test.numpy_sdg_step(X_train[10], y_train[10], 0.005)
 
 
 	if PRINT_INTERMEDIATE_STATE:
