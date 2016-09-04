@@ -4,6 +4,7 @@
 
 Adapted from:
 http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-1-introduction-to-rnns/
+http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-2-implementing-a-language-model-rnn-with-python-numpy-and-theano/
 
 """
 
@@ -106,7 +107,7 @@ class RNNNumpy:
 		# For each output backwards...
 		for t in np.arange(T)[::-1]:
 		    dLdV += np.outer(delta_o[t], s[t].T)
-		    # Initial delta calculation
+		    # Initial delta calculation -> is this using tanh derivative? **REVISIT
 		    delta_t = self.V.T.dot(delta_o[t]) * (1 - (s[t] ** 2))
 		    # Backpropagation through time (for at most self.bptt_truncate steps)
 		    for bptt_step in np.arange(max(0, t-self.bptt_truncate), t+1)[::-1]:
