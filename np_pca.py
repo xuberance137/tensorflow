@@ -35,7 +35,7 @@ def plot2d(transformed):
 	plt.legend()
 	plt.title('Transformed samples with class labels')
 
-# creating 40 3min samples randomly drawn from a multivariate gaussian distribution
+# creating 40 3din samples randomly drawn from a multivariate gaussian distribution
 mu1 = np.array([0,0,0])
 mu2 = np.array([1,1,1])
 cov_mat1 = np.array([[1,0,0],[0,1,0],[0,0,1]])
