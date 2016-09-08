@@ -7,8 +7,12 @@ import numpy as np
 import re
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
+from sklearn.grid_search import GridSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
 
+LOAD_MOVIE_REVIEW_DATA = False
 DEBUG_PRINT = False
 
 def text_preprocessor(text):
@@ -29,32 +33,75 @@ def remove_stopwords(text):
 	stop = stopwords.words('english')
 	return [w for w in tokenizer_porter(text) if w not in stop]
 
-# pbar = pyprind.ProgBar(50000)
-# labels = {'pos':1, 'neg':0}
-# df = pd.DataFrame()
-
-# for s in {'test', 'train'}:
-# 	for l in ('pos', 'neg'):
-# 		path = './data/aclImdb/%s/%s' %(s,l)
-# 		for file in os.listdir(path):
-# 			with open(os.path.join(path, file), 'r') as infile:
-# 				txt = infile.read()
-# 				df = df.append([[txt, labels[l]]], ignore_index=True)
-# 				pbar.update()
-
-# df.columns = ['review', 'setiment']
-
-# np.random.seed(0)
-
-# df = df.reindex(np.random.permutation(df.index))
-# df.to_csv('./data/aclImdb/movie_data.csv', index=False)
-
 if __name__ == '__main__':
+
+	if LOAD_MOVIE_REVIEW_DATA:
+		pbar = pyprind.ProgBar(50000)
+		labels = {'pos':1, 'neg':0}
+		df = pd.DataFrame()
+
+		for s in {'test', 'train'}:
+			for l in ('pos', 'neg'):
+				path = './data/aclImdb/%s/%s' %(s,l)
+				for file in os.listdir(path):
+					with open(os.path.join(path, file), 'r') as infile:
+						txt = infile.read()
+						df = df.append([[txt, labels[l]]], ignore_index=True)
+						pbar.update()
+
+		df.columns = ['review', 'sentiment']
+
+		np.random.seed(0)
+
+		df = df.reindex(np.random.permutation(df.index))
+		df.to_csv('./data/aclImdb/movie_data.csv', index=False)
 
 	pd.set_option('display.max_columns', None)
 	pd.set_option('display.max_rows', None)
 
 	df = pd.read_csv('./data/aclImdb/movie_data.csv')
+
+	X_train = df.loc[:25000, 'review'].values
+	y_train = df.loc[:25000, 'sentiment'].values
+	X_test = df.loc[25000:, 'review'].values
+	y_test = df.loc[25000:, 'sentiment'].values
+	stop = stopwords.words('english')
+
+	tfidf  = TfidfVectorizer(strip_accents=None, lowercase=False, preprocessor=None)
+	param_grid = [
+			{
+			'vect__ngram_range': [(1,1)],
+			'vect__stop_words':[stop, None],
+			'vect__tokenizer': [tokenizer, tokenizer_porter],
+			'clf__penalty': ['l1', 'l2'],
+			'clf__C': [1.0, 10.0, 100.0]}, 
+			{
+			'vect__ngram_range': [(1,1)],
+			'vect__stop_words':[stop, None],
+			'vect__tokenizer': [tokenizer, tokenizer_porter],
+			'vect__use_idf': [False],
+			'vect__norm': [None],
+			'clf__penalty': ['l1', 'l2'],
+			'clf__C': [1.0, 10.0, 100.0]}			
+			]
+
+	lr_tfidf = Pipeline([('vect', tfidf), ('clf', LogisticRegression(random_state=0))])
+
+	gs_lr_tfidf = GridSearchCV(lr_tfidf, param_grid, scoring='accuracy', cv=5, verbose=1, n_jobs =1)
+
+	gs_lr_tfidf.fit(X_train, y_train)
+
+	clf = gs_lr_tfidf.best_estimator_
+
+	print
+	print 'Best parameter set : '
+	for item in gs_lr_tfidf.best_params_:
+		print item
+	print
+	print 'CV Accuracy : ', gs_lr_tfidf.best_scaore_
+	print
+	print 'Test Accuracy : ', clf.score(X_test, y_test)
+
 
 	if DEBUG_PRINT:
 
