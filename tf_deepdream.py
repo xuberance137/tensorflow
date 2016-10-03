@@ -192,7 +192,6 @@ def lap_normalize(img, scale_n=4):
     out = lap_merge(tlevels)
     return out[0,:,:,:]
 
-
 def render_lapnorm(t_obj, img0, visfunc=visstd, iter_n=10, step=1.0, octave_n=3, octave_scale=1.4, lap_n=4):
 	t_score = tf.reduce_mean(t_obj) # defining the optimization objective
 	t_grad = tf.gradients(t_score, t_input)[0] # behold the power of automatic differentiation!
@@ -214,6 +213,31 @@ def render_lapnorm(t_obj, img0, visfunc=visstd, iter_n=10, step=1.0, octave_n=3,
 			showarray(visfunc(img))
 			print img.shape 
 
+def render_deepdream(t_obj, img0, iter_n=10, step=1.5, octave_n=4, octave_scale=1.4):
+	t_score = tf.reduce_mean(t_obj) # defining the optimization objective
+	t_grad = tf.gradients(t_score, t_input)[0] # behold the power of automatic differentiation!
+
+	# split the image into a number of octaves
+	img = img0
+	octaves = []
+	for i in range(octave_n-1):
+		hw = img.shape[:2]
+		lo = resize(img, np.int32(np.float32(hw)/octave_scale))
+		hi = img-resize(lo, hw)
+		img = lo
+		octaves.append(hi)
+
+	# generate details octave by octave
+	for octave in range(octave_n):
+		if octave>0:
+			hi = octaves[-octave]
+			img = resize(img, hi.shape[:2])+hi
+		for i in range(iter_n):
+			g = calc_grad_tiled(img, t_grad)
+			img += g*(step / (np.abs(g).mean()+1e-7))
+		clear_output()
+		if octave == octave_n-1:
+			showarray(img/255.0)
 
 ### MAIN FUNCTION ###
 if __name__ == '__main__':
@@ -257,9 +281,14 @@ if __name__ == '__main__':
 	#render_multiscale(T(layer)[:,:,:,channel], img_noise)
 
 	render_lapnorm(T(layer)[:,:,:,channel], img_noise, octave_n=5)
-	
-	render_lapnorm(T(layer)[:,:,:,65]+T(layer)[:,:,:,139], octave_n=4)
 
+	render_lapnorm(T(layer)[:,:,:,65]+T(layer)[:,:,:,139], img_noise, octave_n=5)
+
+	img0 = PIL.Image.open('./data/pilatus800.jpg')
+	img0 = np.float32(img0)
+	showarray(img0/255.0)
+
+	render_deepdream(T(layer)[:,:,:,65], img0)	
 
 	if DEBUG_PRINT:	
 		# for name in layers:
