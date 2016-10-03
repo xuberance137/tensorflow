@@ -10,6 +10,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
 
 # class for sequential backward selection algorithm
 class SBS():
@@ -37,9 +38,11 @@ class SBS():
 				score = self._calc_score(X_train, y_train, X_test, y_test, p)
 				scores.append(score)
 				subsets.append(p)
+				print p
 
 			best = np.argmax(scores)
 			self.indices_ = subsets[best]
+			print "Best : ", self.indices_
 			self.subsets_.append(self.indices_)
 			dim -= 1  #iterating down from dim to k+1 which would look at combinations from dim-1 to k
 			self.scores_.append(scores[best])
@@ -80,7 +83,7 @@ if __name__ == '__main__':
 	#print lr.coef_
 
 	knn = KNeighborsClassifier(n_neighbors=2)
-	sbs = SBS(knn, k_features=2)
+	sbs = SBS(knn, k_features=1)
 	sbs.fit(X_train_std, y_train)
 
 	k_feat = [len(k) for k in sbs.subsets_]
@@ -89,7 +92,26 @@ if __name__ == '__main__':
 	plt.ylabel('Accuracy')
 	plt.xlabel('Number of features')
 	plt.grid()
+	#plt.show()
+
+	feat_labels = df_wine.columns[1:]
+
+	forest = RandomForestClassifier(n_estimators=10000, random_state=0, n_jobs=-1)
+	forest.fit(X_train, y_train)
+	importances = forest.feature_importances_
+	indices = np.argsort(importances)[::-1] #descending order of values in importances
+	for f in range(X_train.shape[1]):
+		print importances[indices[f]], "\t", feat_labels[indices[f]]
+
+	plt.figure()
+	plt.title('Feature Importances')
+	plt.bar(range(X_train.shape[1]), importances[indices], color='lightblue', align='center')
+	plt.xticks(range(X_train.shape[1]), feat_labels[indices], rotation=90)
+	plt.xlim([-1, X_train.shape[1]])
+	plt.tight_layout()
 	plt.show()
+
+
 
 
 
