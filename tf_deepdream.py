@@ -5,7 +5,8 @@ Processing and visualization of images using deep dream networks based on GoogLe
 Adapted from:
 https://github.com/tensorflow/tensorflow/blob/r0.10/tensorflow/examples/tutorials/deepdream/deepdream.ipynb
 
-Gopal Erinjippurath 01SEPT2016
+Gopal Erinjippurath    01SEP2016
+Added DeepDream Calls  03OCT2016
 
 """
 
@@ -18,7 +19,8 @@ import PIL.Image
 from IPython.display import clear_output, Image, display, HTML
 import tensorflow as tf
 
-DEBUG_PRINT=True
+DEBUG_PRINT = True
+TEST_LAPLACIAN = False
 
 #helper functions for TF Graph Visualization
 def strip_consts(graph_def, max_const_size=32):
@@ -274,19 +276,11 @@ if __name__ == '__main__':
 	# start with a gray image with a little noise
 	img_noise = np.random.uniform(size=(224,224,3)) + 100.0
 
-	#render_naive(T(layer)[:,:,:,channel], img_noise)
-
 	resize = tffunc(np.float32, np.int32)(resize)
-
-	#render_multiscale(T(layer)[:,:,:,channel], img_noise)
-
-	render_lapnorm(T(layer)[:,:,:,channel], img_noise, octave_n=5)
-
-	render_lapnorm(T(layer)[:,:,:,65]+T(layer)[:,:,:,139], img_noise, octave_n=5)
-
+	# Pull in sample image to dream on
 	img0 = PIL.Image.open('./data/pilatus800.jpg')
 	img0 = np.float32(img0)
-	showarray(img0/255.0)
+	#showarray(img0/255.0)
 
 	render_deepdream(T(layer)[:,:,:,65], img0)	
 
@@ -297,5 +291,10 @@ if __name__ == '__main__':
 		print "Total number of feature channels : ", sum(feature_nums)
 		print feature_nums
 
+	if TEST_LAPLACIAN:
+		render_naive(T(layer)[:,:,:,channel], img_noise)
+		render_multiscale(T(layer)[:,:,:,channel], img_noise)
+		render_lapnorm(T(layer)[:,:,:,channel], img_noise, octave_n=5)
+		render_lapnorm(T(layer)[:,:,:,65]+T(layer)[:,:,:,139], img_noise, octave_n=5)
 
 
