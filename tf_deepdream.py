@@ -15,7 +15,6 @@ from io import BytesIO
 import numpy as np
 from functools import partial
 import PIL.Image
-#from __future__ import print_function
 from IPython.display import clear_output, Image, display, HTML
 import tensorflow as tf
 
@@ -69,6 +68,7 @@ def show_graph(graph_def, max_const_size=32):
 	""".format(code.replace('"', '&quot;'))
 	display(HTML(iframe))
 
+#assumes an image input in range [0,1)
 def showarray(a, fmt='jpeg'):
 	a = np.uint8(np.clip(a, 0, 1)*255)
 	f = BytesIO()
@@ -76,6 +76,14 @@ def showarray(a, fmt='jpeg'):
 	im = PIL.Image.fromarray(a, 'RGB')
 	#display(Image(data=f.getvalue()))
 	im.show()
+
+#assumes an image input in range [0,1)
+def savearray(a, filename, fmt='bmp'):
+	a = np.uint8(np.clip(a, 0, 1)*255)
+	im = PIL.Image.fromarray(a, 'RGB')
+	print 'Saved Image file as bmp ...'
+	im.save(filename, fmt)
+
 
 def visstd(a, s=0.1):
 	'''Normalize the image range for visualization'''
@@ -235,11 +243,46 @@ def render_deepdream(t_obj, img0, iter_n=10, step=1.5, octave_n=4, octave_scale=
 			hi = octaves[-octave]
 			img = resize(img, hi.shape[:2])+hi
 		for i in range(iter_n):
+			print '. ', octave, i
 			g = calc_grad_tiled(img, t_grad)
 			img += g*(step / (np.abs(g).mean()+1e-7))
 		clear_output()
 		if octave == octave_n-1:
 			showarray(img/255.0)
+			savearray(img/255.0, './data/inception_66.bmp')
+
+def render_deepdreams(t_tensor, img0, iter_n=10, step=1.5, octave_n=4, octave_scale=1.4):
+
+	num_filters = T(layer).get_shape()[-1]
+
+	for filter_index in range(num_filters):
+		t_obj = t_tensor[:,:,:, filter_index] 
+		t_score = tf.reduce_mean(t_obj) # defining the optimization objective
+		t_grad = tf.gradients(t_score, t_input)[0] # behold the power of automatic differentiation!
+
+		# split the image into a number of octaves
+		img = img0
+		octaves = []
+		for i in range(octave_n-1):
+			hw = img.shape[:2]
+			lo = resize(img, np.int32(np.float32(hw)/octave_scale))
+			hi = img-resize(lo, hw)
+			img = lo
+			octaves.append(hi)
+
+		# generate details octave by octave
+		for octave in range(octave_n):
+			if octave>0:
+				hi = octaves[-octave]
+				img = resize(img, hi.shape[:2])+hi
+			for i in range(iter_n):
+				print filter_index, ' . ', octave, i
+				g = calc_grad_tiled(img, t_grad)
+				img += g*(step / (np.abs(g).mean()+1e-7))
+			clear_output()
+			if octave == octave_n-1:
+				#showarray(img/255.0)
+				savearray(img/255.0, './data/dreams/inception_' + str(filter_index) + '.bmp')
 
 ### MAIN FUNCTION ###
 if __name__ == '__main__':
@@ -274,15 +317,22 @@ if __name__ == '__main__':
 	channel = 65 # picking some feature channel to visualize
 
 	# start with a gray image with a little noise
-	img_noise = np.random.uniform(size=(224,224,3)) + 100.0
+	img_noise = np.random.uniform(size=(224,224,3)) + 200.0
 
 	resize = tffunc(np.float32, np.int32)(resize)
 	# Pull in sample image to dream on
-	img0 = PIL.Image.open('./data/pilatus800.jpg')
-	img0 = np.float32(img0)
+	img0 = PIL.Image.open('./data/texture_bubbles_1400x425.jpg')
+	img0 = np.float32(img0) 
 	#showarray(img0/255.0)
 
-	render_deepdream(T(layer)[:,:,:,65], img0)	
+	# render_deepdream(T(layer)[:,:,:,63], img0)	
+	# render_deepdream(T(layer)[:,:,:,64], img0)	
+	# render_deepdream(T(layer)[:,:,:,65], img0)	
+	# render_deepdream(T(layer)[:,:,:,66], img0, iter_n=2)	
+	# render_deepdream(T(layer)[:,:,:,66], img0)	
+	img0 = np.float32(img0) #makign the input image grey so that features shine through
+	render_deepdream(T(layer)[:,:,:,66], img0, iter_n=20, octave_n=3)	
+	#render_deepdreams(T(layer), img0, iter_n=20, octave_n=5)	
 
 	if DEBUG_PRINT:	
 		# for name in layers:
@@ -290,6 +340,7 @@ if __name__ == '__main__':
 		print "Number of Layers : ", len(layers)
 		print "Total number of feature channels : ", sum(feature_nums)
 		print feature_nums
+		print T(layer).get_shape()
 
 	if TEST_LAPLACIAN:
 		render_naive(T(layer)[:,:,:,channel], img_noise)
