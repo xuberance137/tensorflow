@@ -3,3 +3,4 @@ matplotlib
 tensorflow
 ipywidgets
 seaborn
+pillow
