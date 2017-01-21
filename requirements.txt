@@ -4,3 +4,4 @@ tensorflow
 ipywidgets
 seaborn
 pillow
+ipython
