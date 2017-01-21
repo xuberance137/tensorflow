@@ -6,10 +6,10 @@ Adapted from:
 https://github.com/tensorflow/tensorflow/blob/r0.10/tensorflow/examples/tutorials/deepdream/deepdream.ipynb
 
 Usage:
-./tf_deepdream.py <channel_number> <input_file_path>
+./tf_deepdream.py <input_file_path> <channel_number> <num_iter> <num_octaves>
 
 Example:
-./tf_deepdream.py 66 ./data/texture_bubbles_1400x425.jpg 
+./tf_deepdream.py ./data/texture_bubbles_1400x425.jpg 66 4 2
 
 Gopal Erinjippurath    01SEP2016
 Added DeepDream Calls  03OCT2016
@@ -25,7 +25,7 @@ import PIL.Image
 from IPython.display import clear_output, Image, display, HTML
 import tensorflow as tf
 
-DEBUG_PRINT = True
+DEBUG_PRINT = False
 TEST_LAPLACIAN = False
 
 #helper functions for TF Graph Visualization
@@ -308,19 +308,19 @@ if __name__ == '__main__':
 	#DEFAULTS:
 	channel = 66 
 	input_img_filename = './data/texture_bubbles_1400x425.jpg'
-	num_iterations = 5
-	num_octaves = 2
+	num_iterations = 10
+	num_octaves = 5
 
 	#Input parameters
 	argc = len(sys.argv)
 	if argc == 5:
-		channel = sys.argv[1] # picking some feature channel to visualize	
-		input_img_filename  = str(sys.argv[2])
-		num_iterations = sys.argv[3]
-		num_octaves = sys.argv[4]
+		input_img_filename  = str(sys.argv[1])
+		channel = int(sys.argv[2]) # picking some feature channel to visualize	
+		num_iterations = int(sys.argv[3])
+		num_octaves = int(sys.argv[4])
 	elif argc == 3:
-		channel = sys.argv[1] # picking some feature channel to visualize	
-		input_img_filename  = str(sys.argv[2])
+		input_img_filename  = str(sys.argv[1])
+		channel = int(sys.argv[2]) # picking some feature channel to visualize	
 	else:
 		print 'Usage: ./tf_deepdream.py <channel_number> <input_file_path> <num_iter> <num_octaves>'
 
@@ -359,7 +359,7 @@ if __name__ == '__main__':
 	img0 = PIL.Image.open(input_img_filename)
 	img0 = np.float32(img0) #making the input image grey so that features shine through
 
-	render_deepdream(T(layer), channel, img0, input_img_filename, iter_n=5, octave_n=2)	
+	render_deepdream(T(layer), channel, img0, input_img_filename, iter_n=num_iterations, octave_n=num_octaves)	
 
 	if DEBUG_PRINT:	
 		for name in layers:
