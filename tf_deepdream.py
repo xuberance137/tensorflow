@@ -5,9 +5,15 @@ Processing and visualization of images using deep dream networks based on GoogLe
 Adapted from:
 https://github.com/tensorflow/tensorflow/blob/r0.10/tensorflow/examples/tutorials/deepdream/deepdream.ipynb
 
+Usage:
+./tf_deepdream.py <channel_number> <input_file_path>
+
+Example:
+./tf_deepdream.py 66 ./data/texture_bubbles_1400x425.jpg 
+
 Gopal Erinjippurath    01SEP2016
 Added DeepDream Calls  03OCT2016
-
+Updated interface      21JAN2017
 """
 
 import os
