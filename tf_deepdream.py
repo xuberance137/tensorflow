@@ -294,7 +294,7 @@ def render_deepdream(t_obj_layer, channel, img0, inputfile, iter_n=10, step=1.5,
 			img += g*(step / (np.abs(g).mean()+1e-7))
 		clear_output()
 		if octave == octave_n-1:
-			showarray(img/255.0)
+			#showarray(img/255.0)
 			savearray(img/255.0, outputfile)
 			print 'Created dream and storing image ...'
 
@@ -304,8 +304,25 @@ if __name__ == '__main__':
 
 	print "Loading Model..."
 	model_fn = 'models/inception/tensorflow_inception_graph.pb'
-	channel = sys.argv[1] # picking some feature channel to visualize	
-	input_img_filename  = str(sys.argv[2])
+
+	#DEFAULTS:
+	channel = 66 
+	input_img_filename = './data/texture_bubbles_1400x425.jpg'
+	num_iterations = 5
+	num_octaves = 2
+
+	#Input parameters
+	argc = len(sys.argv)
+	if argc == 5:
+		channel = sys.argv[1] # picking some feature channel to visualize	
+		input_img_filename  = str(sys.argv[2])
+		num_iterations = sys.argv[3]
+		num_octaves = sys.argv[4]
+	elif argc == 3:
+		channel = sys.argv[1] # picking some feature channel to visualize	
+		input_img_filename  = str(sys.argv[2])
+	else:
+		print 'Usage: ./tf_deepdream.py <channel_number> <input_file_path> <num_iter> <num_octaves>'
 
 	graph = tf.Graph()
 	#sess = tf.Session(graph=graph)
