@@ -23,12 +23,25 @@ def showarray(a, fmt='jpeg'):
     #display(Image(data=f.getvalue()))
     im.show()
 
+def variable_summaries(var):
+    """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
+    with tf.name_scope('summaries'):
+      mean = tf.reduce_mean(var)
+      tf.summary.scalar('mean', mean)
+      with tf.name_scope('stddev'):
+        stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+      tf.summary.scalar('stddev', stddev)
+      tf.summary.scalar('max', tf.reduce_max(var))
+      tf.summary.scalar('min', tf.reduce_min(var))
+      tf.summary.histogram('histogram', var)   
+
 class vgg16:
     def __init__(self, imgs, weights=None, sess=None):
         self.imgs = imgs
         self.convlayers()
         self.fc_layers()
         self.probs = tf.nn.softmax(self.fc3l)
+        self.merged = tf.summary.merge_all()
         if weights is not None and sess is not None:
             self.load_weights(weights, sess)
 
@@ -40,6 +53,7 @@ class vgg16:
         with tf.name_scope('preprocess') as scope:
             mean = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32, shape=[1, 1, 1, 3], name='img_mean')
             images = self.imgs-mean
+            tf.summary.image('preprocess', images, 10)
 
         # conv1_1
         with tf.name_scope('conv1_1') as scope:
@@ -51,6 +65,7 @@ class vgg16:
             out = tf.nn.bias_add(conv, biases)
             self.conv1_1 = tf.nn.relu(out, name=scope)
             self.parameters += [kernel, biases]
+            variable_summaries(self.conv1_1)
 
         # conv1_2
         with tf.name_scope('conv1_2') as scope:
@@ -262,15 +277,23 @@ class vgg16:
             sess.run(self.parameters[i].assign(weights[k]))
 
 if __name__ == '__main__':
-    sess = tf.Session()
+    sess = tf.InteractiveSession()
+
     imgs = tf.placeholder(tf.float32, [None, 224, 224, 3])
     vgg = vgg16(imgs, 'vgg16_weights.npz', sess)
 
     img1 = imread('laska.png', mode='RGB')
     img1 = imresize(img1, (224, 224))
 
-    prob = sess.run(vgg.probs, feed_dict={vgg.imgs: [img1]})[0]
-    preds = (np.argsort(prob)[::-1])[0:5]
+    summary, prob = sess.run([vgg.merged, vgg.probs], feed_dict={vgg.imgs: [img1]})
+    file_writer = tf.summary.FileWriter('./logs', sess.graph)
+    file_writer.add_summary(summary)
+
+    preds = (np.argsort(prob[0])[::-1])[0:50]
     for p in preds:
-        print str(class_names[p]).split(",")[0], prob[p]
+        print str(class_names[p]).split(",")[0], prob[0][p]
+
+    file_writer.close()
+
+
 
