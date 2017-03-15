@@ -1,6 +1,6 @@
 numpy
 matplotlib
-tensorflow
+tensorflow==1.0.0
 ipywidgets
 seaborn
 pillow
