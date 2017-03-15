@@ -1,18 +1,20 @@
-########################################################################################
-# Davi Frossard, 2016                                                                  #
-# VGG16 implementation in TensorFlow                                                   #
-# Details:                                                                             #
-# http://www.cs.toronto.edu/~frossard/post/vgg16/                                      #
-#                                                                                      #
-# Model from https://gist.github.com/ksimonyan/211839e770f7b538e2d8#file-readme-md     #
-# Weights from Caffe converted using https://github.com/ethereon/caffe-tensorflow      #
-########################################################################################
+'''
+Davi Frossard, 2016, VGG16 implementation in TensorFlow                                                   #
+Details: http://www.cs.toronto.edu/~frossard/post/vgg16/                                      
+                                                                                     
+Model from https://gist.github.com/ksimonyan/211839e770f7b538e2d8#file-readme-md     
+Weights from Caffe converted using https://github.com/ethereon/caffe-tensorflow 
+Run as $python vgg16.py
+Run tensorboard as $tensorboard --port 6007 --logdir=logs     
+
+'''
 
 import tensorflow as tf
 import numpy as np
 from scipy.misc import imread, imresize
 from imagenet_classes import class_names
 import PIL.Image
+import pdb
 
 #assumes an image input in range [0,1)
 def showarray(a, fmt='jpeg'):
@@ -66,6 +68,11 @@ class vgg16:
             self.conv1_1 = tf.nn.relu(out, name=scope)
             self.parameters += [kernel, biases]
             variable_summaries(self.conv1_1)
+            # conv1_1slices = tf.Variable(tf.unstack(self.conv1_1, axis=3), name="conv1_1split")
+            # print "conv1_1 shape : ", self.conv1_1.get_shape()
+            # print "conv1_1 slices shape : ", conv1_1slices.get_shape() #np.array(conv1_1slices).shape
+            # tf.summary.image('conv1_1', conv1_1slices)
+
 
         # conv1_2
         with tf.name_scope('conv1_2') as scope:
